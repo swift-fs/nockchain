@@ -177,8 +177,6 @@ To stop a node:
 nock/
 ├── nock.sh           # Main setup and management script
 ├── README.md         # This documentation
-└── target/           # Build output directory
-    └── release/      # Compiled binaries
 ```
 
 ## Environment Variables
