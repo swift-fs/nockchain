@@ -1,188 +1,191 @@
-# Nock Node Setup Guide
+# Nockchain Multi-Instance Mining Setup Script
 
-This guide will help you set up and run Nock nodes (leader and follower) on your system.
+This script provides an interactive menu-driven interface to set up and manage Nockchain mining instances with multi-core support.
 
 ## Prerequisites
 
-- Ubuntu 22.04 or similar Linux distribution
+- Ubuntu 22.04 or similar Linux distribution with apt package manager
 - Sudo privileges
-- 32-64GB RAM
+- At least 8GB RAM (32-64GB recommended for multiple instances)
 - At least 200GB free disk space
+- Internet connection
 
-## Quick Installation
+## Quick Start
 
-1. **Download the Script**
+1. **Download and Run the Script**
 
    ```bash
-   curl -sSL https://raw.githubusercontent.com/0xNirvanaByte/nockchain/main/nock.sh -o nock.sh
+   wget https://raw.githubusercontent.com/your-repo/nockchain/main/nock.sh
    chmod +x nock.sh
+   ./nock.sh
    ```
 
-2. **Run Commands**
+2. **Complete Setup (Run in order)**
+   - Option 1: Install system dependencies
+   - Option 2: Install Rust
+   - Option 3: Setup repository
+   - Option 4: Build project and configure environment variables
+   - Option 5: Generate wallet
+   - Option 10: Setup multi-instance directories (optional)
+   - Option 7: Start mining instances
 
-   ```bash
-   # Install and build
-   ./nock.sh --install
+## Menu Options
 
-   # Create wallet
-   ./nock.sh --createwallet
+### Setup & Installation
 
-   # Start leader node (requires mining public key)
-   ./nock.sh --startleader
+- **1) Install system dependencies** - Installs required system packages including clang, llvm-dev, libclang-dev
+- **2) Install Rust** - Installs Rust toolchain via rustup
+- **3) Setup repository** - Clones Nockchain repository and sets up environment files
+- **4) Build project and configure environment variables** - Builds all Nockchain components
 
-   # Start follower node
-   ./nock.sh --startfollower
-   ```
+### Wallet Management
 
-## Manual Installation Steps
+- **5) Generate wallet** - Creates new wallet keys and optionally sets mining public key
+- **6) Set mining public key** - Manually configure your mining public key
+- **8) Backup keys** - Creates timestamped backup of wallet keys and configuration
 
-If you prefer to clone the repository:
+### Multi-Instance Setup
 
-1. **Clone the Repository**
+- **10) Setup multi-instance directories** - Creates multiple mining instances (limited by CPU cores)
 
-   ```bash
-   git clone https://github.com/0xNirvanaByte/nockchain.git
-   cd nockchain
-   ```
+### Mining Operations
 
-2. **Make the Script Executable**
+- **7) Start mining instances** - Starts single or multiple mining instances
+- **11) Stop mining instances** - Stops running mining instances
+- **12) Check instance status** - Shows status of all instances and system resources
+- **13) Clean instance data** - Removes blockchain data to force resync
 
-   ```bash
-   chmod +x nock.sh
-   ```
+### Monitoring
 
-3. **Install and Build Nock**
+- **9) View node logs** - Access real-time logs via screen sessions or log files
 
-   ```bash
-   ./nock.sh --install
-   ```
+### Advanced
 
-   This will:
+- **21) Network diagnostics** - Tests connectivity, ports, and system resources
 
-   - Install all required dependencies
-   - Set up Rust toolchain
-   - Clone and build the Nockchain repository
-   - Configure environment variables
+## Multi-Instance Mining
 
-4. **Create a Wallet**
+The script automatically detects your CPU cores and allows you to run multiple mining instances:
 
-   ```bash
-   ./nock.sh --createwallet
-   ```
+- **CPU Detection**: Automatically detects available CPU cores using `nproc`
+- **Port Management**: Each instance gets a unique port starting from 33416
+- **Directory Structure**: Creates separate `node1`, `node2`, etc. directories
+- **Independent Operation**: Each instance runs in its own screen session
 
-   This will generate:
-
-   - A new wallet
-   - Mnemonic phrase
-   - Private key
-   - Public key
-
-   ⚠️ **IMPORTANT**: Save these credentials securely! You'll need them later.
-
-## Running Nodes
-
-### Leader Node
-
-1. **Start the Leader Node**
-
-   ```bash
-   ./nock.sh --startleader
-   ```
-
-   The script will:
-
-   - Prompt for your mining public key
-   - Update the Makefile with your key
-   - Start the leader node in a screen session
-   - Begin mining blocks
-   - Show logs in real-time
-
-   To detach from the screen session:
-
-   - Press `Ctrl+A` followed by `D`
-
-   To reattach to the screen session:
-
-   ```bash
-   screen -r leader-node
-   ```
-
-### Follower Node
-
-1. **Start the Follower Node**
-
-   ```bash
-   ./nock.sh --startfollower
-   ```
-
-   The follower node will:
-
-   - Start in a screen session
-   - Connect to the network
-   - Show logs in real-time
-
-   To detach from the screen session:
-
-   - Press `Ctrl+A` followed by `D`
-
-   To reattach to the screen session:
-
-   ```bash
-   screen -r follower-node
-   ```
-
-## Managing Nodes
-
-### Viewing Logs
-
-To view logs for either node:
+### Instance Management
 
 ```bash
-# For leader node
-screen -r leader-node
+# View all running instances
+screen -ls
 
-# For follower node
-screen -r follower-node
+# Attach to specific instance
+screen -r miner1
+screen -r miner2
+
+# Detach from screen session
+Ctrl+A then D
+
+# Stop specific instance
+screen -X -S miner1 quit
 ```
-
-### Stopping Nodes
-
-To stop a node:
-
-1. Attach to its screen session
-2. Press `Ctrl+C` to stop the process
-3. Type `exit` to close the screen session
-
-## Troubleshooting
-
-1. **If the installation fails:**
-
-   - Check your internet connection
-   - Ensure you have sufficient disk space
-   - Verify you have sudo privileges
-
-2. **If the wallet creation fails:**
-
-   - Ensure the installation completed successfully
-   - Check if the nockchain-wallet executable exists in the target/release directory
-
-3. **If nodes fail to start:**
-   - Check if another instance is already running
-   - Verify your system has enough resources
-   - Check the logs for specific error messages
 
 ## Directory Structure
 
 ```
-nock/
-├── nock.sh           # Main setup and management script
-├── README.md         # This documentation
+$HOME/nockchain/           # Main installation directory
+├── .env                   # Main environment configuration
+├── wallet_keys.txt        # Generated wallet keys
+├── target/release/        # Built binaries
+├── node1/                 # Instance 1 directory
+│   ├── .env              # Instance-specific config
+│   ├── .data.nockchain/  # Blockchain data
+│   ├── .socket/          # Node socket
+│   └── miner1.log        # Instance logs
+├── node2/                 # Instance 2 directory
+│   └── ...
+
 ```
 
-## Environment Variables
+## Environment Configuration
 
-The script automatically sets up these environment variables:
+The script manages these key environment variables:
 
-- `PATH`: Includes the Nockchain binaries
-- `RUST_LOG`: Set to "info" for logging
-- `MINIMAL_LOG_FORMAT`: Set to "true" for cleaner logs
+- `MINING_PUBKEY`: Your wallet's public key for mining rewards
+- `PEER_PORT`: Unique port for each instance (33416, 33426, 33436, etc.)
+- `INSTANCE_ID`: Numeric identifier for each instance
+- `RUST_LOG`: Logging level (set to "info")
+
+## Wallet Security
+
+⚠️ **IMPORTANT SECURITY NOTES**:
+
+1. **Backup your wallet**: Use option 8 to create timestamped backups
+2. **Secure storage**: Keep `wallet_keys.txt` and backups in secure locations
+3. **Private keys**: Never share your private keys or seed phrases
+4. **Public key**: Only the public key is used for mining configuration
+
+## Troubleshooting
+
+### Installation Issues
+
+- Ensure you have sudo privileges
+- Check internet connectivity
+- Verify sufficient disk space (200GB+)
+- Make sure you're on a supported Linux distribution
+
+### Wallet Generation Problems
+
+- Ensure step 4 (build) completed successfully
+- Check if `nockchain-wallet` binary exists
+- Review wallet_keys.txt file format
+
+### Mining Instance Issues
+
+- Verify instances are created (option 10)
+- Check system resources (option 12)
+- Review instance logs (option 9)
+- Ensure ports aren't blocked by firewall
+
+### Socket Issues
+
+- Socket files are located at `nodeX/.socket/nockchain_npc.sock`
+- Make sure mining instances are fully started before checking status
+- Instances may take time to create socket files during startup
+
+### Network Connectivity
+
+- Use option 21 for comprehensive network diagnostics
+- Check DNS resolution for nockchain-backbone.zorp.io
+- Verify UDP port connectivity
+- Ensure system time is synchronized
+
+## System Requirements by Instance Count
+
+| Instances | RAM (Recommended) | CPU Cores | Notes                 |
+| --------- | ----------------- | --------- | --------------------- |
+| 1         | 8GB               | 2+        | Basic setup           |
+| 2-4       | 16GB              | 4+        | Light multi-instance  |
+| 5-8       | 32GB              | 8+        | Medium multi-instance |
+| 9+        | 64GB+             | 12+       | Heavy multi-instance  |
+
+## Screen Session Commands
+
+```bash
+# List all screen sessions
+screen -ls
+
+# Create new screen session
+screen -S session_name
+
+# Attach to existing session
+screen -r session_name
+
+# Detach from current session
+Ctrl+A then D
+
+# Kill a screen session
+screen -X -S session_name quit
+
+# View session in read-only mode
+screen -x session_name
+```
