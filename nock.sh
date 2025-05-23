@@ -1126,7 +1126,6 @@ function main_menu() {
   echo "  9) View node logs"
   echo ""
   echo "${CYAN}=== Advanced ===${RESET}"
-  echo "  20) Check wallet balance"
   echo "  21) Network diagnostics"
   echo ""
   echo "  0) Exit"
@@ -1150,90 +1149,6 @@ function main_menu() {
     0) echo -e "${GREEN}Exited.${RESET}"; exit 0 ;;
     *) echo -e "${RED}[-] Invalid option!${RESET}"; pause_and_return ;;
   esac
-}
-
-# ========= Check Wallet Balance =========
-function check_wallet_balance() {
-  if [ ! -d "$NCK_DIR" ]; then
-    echo -e "${RED}[-] nockchain directory not found.${RESET}"
-    pause_and_return
-    return
-  fi
-
-  cd "$NCK_DIR" || { echo -e "${RED}[-] Unable to enter nockchain directory!${RESET}"; pause_and_return; return; }
-
-  if ! command -v nockchain-wallet &> /dev/null; then
-    echo -e "${RED}[-] nockchain-wallet command not available. Please run option 4 first!${RESET}"
-    pause_and_return
-    return
-  fi
-
-  echo -e "[*] Checking wallet balance and notes..."
-  echo -e "[*] Working from directory: $(pwd)"
-
-  # Look for socket files in instance directories
-  socket_file=""
-  found_instance=""
-
-  for instance_dir in node*; do
-    if [ -d "$instance_dir" ] && [ -f "$instance_dir/.socket/nockchain.sock" ]; then
-      socket_file="$instance_dir/.socket/nockchain.sock"
-      found_instance="$instance_dir"
-      echo -e "[*] Found socket in $instance_dir"
-      break
-    fi
-  done
-
-  if [ -z "$socket_file" ]; then
-    echo -e "${RED}[-] No nockchain socket found in any node directory!${RESET}"
-    echo -e "${YELLOW}[!] Make sure at least one mining instance is running.${RESET}"
-    echo -e "${YELLOW}[!] Socket should be located at: node*/.socket/nockchain.sock${RESET}"
-
-    # Debug: Show what directories exist
-    echo -e "\n${CYAN}=== Debug: Available directories ===${RESET}"
-    ls -la | grep "^d" | grep node || echo "No node directories found"
-
-    # Check if any instances are running
-    active_sessions=($(screen -ls 2>/dev/null | grep -o 'miner[0-9]*' | sort))
-    if [ ${#active_sessions[@]} -gt 0 ]; then
-      echo -e "\n${YELLOW}Active sessions found: ${active_sessions[*]}${RESET}"
-      echo -e "${YELLOW}But no socket files detected. Instance may still be starting up.${RESET}"
-    else
-      echo -e "\n${RED}No active mining sessions found.${RESET}"
-      echo -e "${YELLOW}Please start mining instances using option 7 first.${RESET}"
-    fi
-
-    pause_and_return
-    return
-  fi
-
-  echo -e "\n${CYAN}=== Wallet Balance Check ===${RESET}"
-  echo -e "[*] Using socket: ${CYAN}$socket_file${RESET}"
-  echo -e "[*] From instance: ${CYAN}$found_instance${RESET}"
-
-  # Get mining pubkey from .env
-  if [ -f ".env" ] && grep -q "^MINING_PUBKEY=" .env; then
-    MINING_PUBKEY=$(grep "^MINING_PUBKEY=" .env | cut -d'=' -f2)
-
-    echo -e "[*] Checking notes for pubkey: ${CYAN}$MINING_PUBKEY${RESET}"
-
-    # List notes by pubkey
-    echo -e "\n${YELLOW}=== Notes for your pubkey ===${RESET}"
-    nockchain-wallet --nockchain-socket "$socket_file" list-notes-by-pubkey "$MINING_PUBKEY" 2>/dev/null || {
-      echo -e "${RED}[-] Failed to retrieve notes. Make sure mining instance is running and synced.${RESET}"
-      echo -e "${YELLOW}[!] This may be normal if the node is still syncing or no notes exist yet.${RESET}"
-    }
-
-    echo -e "\n${YELLOW}=== All notes seen by node ===${RESET}"
-    nockchain-wallet --nockchain-socket "$socket_file" list-notes 2>/dev/null || {
-      echo -e "${RED}[-] Failed to retrieve all notes.${RESET}"
-      echo -e "${YELLOW}[!] This may be normal if the node is still syncing.${RESET}"
-    }
-  else
-    echo -e "${RED}[-] No MINING_PUBKEY found in .env. Please run option 6 first!${RESET}"
-  fi
-
-  pause_and_return
 }
 
 # ========= Network Diagnostics =========
